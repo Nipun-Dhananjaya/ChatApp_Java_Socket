@@ -16,7 +16,7 @@ public class AppInitializer extends Application {
     public void start(Stage primaryStage) throws IOException {
         primaryStage.centerOnScreen();
         primaryStage.setTitle("Server");
-        primaryStage.setScene(new Scene(FXMLLoader.load(getClass().getResource("/view/ChatWindowForm.fxml"))));
+        primaryStage.setScene(new Scene(FXMLLoader.load(getClass().getResource("/view/LoginForm.fxml"))));
         primaryStage.show();
     }
 }
