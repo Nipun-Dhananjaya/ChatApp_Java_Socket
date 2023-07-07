@@ -3,6 +3,7 @@
 <?import com.jfoenix.controls.JFXButton?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -13,7 +14,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="chatPane" prefHeight="501.0" prefWidth="660.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.playtech.controller.ChatWindowFormController">
+<AnchorPane fx:id="chatPane" prefHeight="501.0" prefWidth="660.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.playtech.controller.ClientOneChatWindowFormController">
    <children>
       <ImageView fitHeight="501.0" fitWidth="660.0" layoutY="-2.0" opacity="0.75" pickOnBounds="true" smooth="false">
          <image>
@@ -22,7 +23,7 @@
       </ImageView>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#0899928f" height="53.0" layoutX="1.0" stroke="#faf8f800" strokeType="INSIDE" width="660.0" />
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#38ada99e" height="70.0" layoutX="-1.0" layoutY="430.0" stroke="#faf8f800" strokeType="INSIDE" width="660.0" />
-      <TextField fx:id="msgTxt" layoutX="15.0" layoutY="446.0" onAction="#msgTxtOnAction" opacity="0.8" prefHeight="38.0" prefWidth="408.0" promptText="Message" style="-fx-border-radius: 25; -fx-background-radius: 25;">
+      <TextField fx:id="msgTxt" layoutX="15.0" layoutY="446.0" onAction="#msgTxtOnAction" onKeyPressed="#txtMsgKeyPressedAction" opacity="0.8" prefHeight="38.0" prefWidth="459.0" promptText="Message" style="-fx-border-radius: 25; -fx-background-radius: 25;">
          <font>
             <Font size="15.0" />
          </font>
@@ -30,7 +31,7 @@
             <Cursor fx:constant="TEXT" />
          </cursor>
       </TextField>
-      <JFXButton fx:id="sndBtn" alignment="TOP_LEFT" layoutX="428.0" layoutY="429.0" onAction="#sendBtnOnAction" prefHeight="68.0" prefWidth="86.0" style="-fx-background-radius: 360; -fx-border-radius: 360;" stylesheets="@../styles/main.css" text="." textFill="#ffffff00">
+      <JFXButton fx:id="sndBtn" alignment="TOP_LEFT" layoutX="486.0" layoutY="429.0" onAction="#sendBtnOnAction" prefHeight="68.0" prefWidth="86.0" style="-fx-background-radius: 360; -fx-border-radius: 360;" stylesheets="@../styles/main.css" text="." textFill="#ffffff00">
          <graphic>
             <ImageView fitHeight="63.0" fitWidth="62.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -58,7 +59,7 @@
             </RadialGradient>
          </ripplerFill>
       </JFXButton>
-      <JFXButton fx:id="imgBtn" alignment="TOP_LEFT" layoutX="514.0" layoutY="436.0" onAction="#imgBtnOnAction" prefHeight="56.0" prefWidth="57.0" style="-fx-background-radius: 360; -fx-border-radius: 360;" stylesheets="@../styles/main.css" text="." textFill="#ffffff00">
+      <JFXButton fx:id="imgBtn" alignment="TOP_LEFT" layoutX="585.0" layoutY="436.0" onAction="#imgBtnOnAction" prefHeight="56.0" prefWidth="57.0" style="-fx-background-radius: 360; -fx-border-radius: 360;" stylesheets="@../styles/main.css" text="." textFill="#ffffff00">
          <cursor>
             <Cursor fx:constant="HAND" />
          </cursor>
@@ -73,39 +74,6 @@
             <RadialGradient centerX="0.4735682651334922" centerY="0.5" radius="0.5">
                <stops>
                   <Stop>
-                     <color>
-                        <Color red="1.0" green="1.0" blue="1.0" opacity="0.0" />
-                     </color>
-                  </Stop>
-                  <Stop offset="1.0">
-                     <color>
-                        <Color red="1.0" green="1.0" blue="1.0" />
-                     </color>
-                  </Stop>
-               </stops>
-            </RadialGradient>
-         </ripplerFill>
-      </JFXButton>
-      <JFXButton fx:id="audioBtn" alignment="TOP_LEFT" layoutX="589.0" layoutY="436.0" onAction="#audBtnOnAction" prefHeight="56.0" prefWidth="57.0" style="-fx-background-radius: 360; -fx-border-radius: 360;" stylesheets="@../styles/main.css" text="." textFill="#ffffff00">
-         <cursor>
-            <Cursor fx:constant="HAND" />
-         </cursor>
-         <graphic>
-            <ImageView fitHeight="47.0" fitWidth="51.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@../images/music-note-icon-19-removebg-preview.png" />
-               </image>
-            </ImageView>
-         </graphic>
-         <ripplerFill>
-            <RadialGradient centerX="0.48898680094580294" centerY="0.48863639253558533" radius="0.5">
-               <stops>
-                  <Stop>
-                     <color>
-                        <Color red="1.0" green="1.0" blue="1.0" opacity="0.0" />
-                     </color>
-                  </Stop>
-                  <Stop offset="0.006729475100942127">
                      <color>
                         <Color red="1.0" green="1.0" blue="1.0" opacity="0.0" />
                      </color>
@@ -157,5 +125,10 @@
             </RadialGradient>
          </ripplerFill>
       </JFXButton>
+      <TextArea fx:id="txtAr" layoutY="53.0" opacity="0.24" prefHeight="376.0" prefWidth="660.0">
+         <font>
+            <Font name="System Bold" size="17.0" />
+         </font>
+      </TextArea>
    </children>
 </AnchorPane>
