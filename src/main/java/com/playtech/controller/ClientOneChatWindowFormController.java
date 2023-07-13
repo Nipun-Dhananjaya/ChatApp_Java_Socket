@@ -2,35 +2,32 @@ package com.playtech.controller;
 
 import com.jfoenix.controls.JFXButton;
 import com.playtech.util.Client;
-import com.playtech.util.Server;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Group;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.TextFlow;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class ClientOneChatWindowFormController implements Initializable{
@@ -39,57 +36,77 @@ public class ClientOneChatWindowFormController implements Initializable{
     public JFXButton imgBtn;
     public JFXButton sndBtn;
     public JFXButton addBtn;
-    public TextArea txtAr;
+    public ScrollPane scrlPn;
+    public VBox vBox;
     Client client=new Client();
     static String ans="";
     private String previousMessage;
+    static String msgType = "";
 
     public ClientOneChatWindowFormController() throws IOException {
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        //OutputStreams.remoteSockets.add(sock);
-        txtAr.setDisable(true);
+        scrlPn.setDisable(true);
         sndBtn.setDisable(true);
         Thread t2= new Thread(()->{
             getMessage(ans);
-            try {
-                getImage();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         });
         t2.start();
     }
 
     private void getImage() throws IOException {
-        File receivedFile = client.getImgFromServer();
-        BufferedImage bufferedImage = ImageIO.read(receivedFile);
+        while (true){
+            System.out.println("img get method");
+            File receivedFile = client.getImgFromServer();
+            if (receivedFile != null && receivedFile.exists()) {
+                BufferedImage bufferedImage = ImageIO.read(receivedFile);
+                Image image = SwingFXUtils.toFXImage(bufferedImage, null);
 
-        Image image = SwingFXUtils.toFXImage(bufferedImage, null);
+                Platform.runLater(() -> {
+                    HBox hb = new HBox();
+                    hb.setAlignment(Pos.CENTER_LEFT);
 
-        ImageView img= new ImageView(image);
-        img.setFitWidth(200);
-        img.setPreserveRatio(true);
+                    ImageView img = new ImageView(image);
+                    img.setFitHeight(200);
+                    img.setFitWidth(200);
+                    img.setPreserveRatio(true);
 
-        Group group = new Group();
-
-        group.getChildren().add(img);
-        group.getChildren().add(txtAr);
-        System.out.println("grouped");
+                    hb.getChildren().add(img);
+                    vBox.getChildren().add(hb);
+                });
+            }
+        }
     }
 
     private void getMessage(String answer) {
         while (true){
             ans = client.msgGetFromServer(answer);
-            if (!ans.equals("")) {
-                if (!ans.equals(previousMessage)) {
-                    Platform.runLater(() -> {
-                        txtAr.appendText("\n" + ans);
-                    });
-                    System.out.println("Contr  " + ans);
-                    previousMessage = ans;
+            if(msgType.equals("msg")) {
+                if (!ans.equals("")) {
+                    if (!ans.equals(previousMessage)) {
+                        Platform.runLater(() -> {
+                            Label l1 = new Label("\n" + ans);
+                            l1.setWrapText(true);
+                            l1.setMaxWidth(300);
+                            l1.setMinHeight(20);
+                            l1.setFont(new Font("Arial", 20));
+                            l1.setTextFill(Color.web("#00090d"));
+                            HBox hb = new HBox();
+                            hb.setAlignment(Pos.CENTER_LEFT);
+                            hb.getChildren().add(l1);
+                            vBox.getChildren().add(hb);
+                        });
+                        System.out.println("Contr  " + ans);
+                        previousMessage = ans;
+                    }
+                }
+            }else if (msgType.equals("img")) {
+                try {
+                    getImage();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -99,19 +116,23 @@ public class ClientOneChatWindowFormController implements Initializable{
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Image");
         FileChooser.ExtensionFilter image = new FileChooser.ExtensionFilter("Image Files", "*.jpg", "*.png", "*.gif");
-        fileChooser.getExtensionFilters().addAll(image);
+        fileChooser.getExtensionFilters().add(image);
         File selectedFile = fileChooser.showOpenDialog(new Stage());
 
         if (selectedFile != null) {
+            int preCount=vBox.getChildren().size();
             sendTextMsg(((Stage) chatPane.getScene().getWindow()).getTitle()+": ");
-            String type= FilenameUtils.getExtension(selectedFile.getName());
-            System.out.println(type);
-            client.sendImgToServer(selectedFile,type);
-            System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+            do{
+                String type = FilenameUtils.getExtension(selectedFile.getName());
+                System.out.println(type);
+                msgType = "img";
+                client.sendImgToServer(selectedFile, type);
+                System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+            }while (preCount<vBox.getChildren().size());
         }
     }
 
-    public void sendBtnOnAction(ActionEvent actionEvent) throws InterruptedException, FileNotFoundException, UnsupportedEncodingException {
+    public void sendBtnOnAction(ActionEvent actionEvent) {
         sendTextMsg(((Stage) chatPane.getScene().getWindow()).getTitle()+": "+msgTxt.getText());
     }
 
@@ -139,8 +160,18 @@ public class ClientOneChatWindowFormController implements Initializable{
 
     public void sendTextMsg(String msg) {
         ans="";
+        msgType="msg";
         client.msgSendToServer(msg);
         msgTxt.clear();
         sndBtn.setDisable(true);
+    }
+
+    public void emojiSelectOnAction(ActionEvent actionEvent) {
+        Button emojiButton = (Button) actionEvent.getSource();
+        String emoji = emojiButton.getText();
+
+        // Use the selected emoji as needed
+        System.out.println("Selected Emoji: " + emoji);
+        msgTxt.appendText(emoji);
     }
 }
