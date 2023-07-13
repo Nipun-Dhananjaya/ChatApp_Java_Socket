@@ -41,55 +41,54 @@ public class ClientOneChatWindowFormController implements Initializable{
     Client client=new Client();
     static String ans="";
     private String previousMessage;
-    static String msgType = "";
 
     public ClientOneChatWindowFormController() throws IOException {
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        scrlPn.setDisable(true);
         sndBtn.setDisable(true);
+        vBox.setSpacing(10);
+        scrlPn.setFitToWidth(true);
+        scrlPn.setFitToHeight(true);
         Thread t2= new Thread(()->{
             getMessage(ans);
         });
         t2.start();
     }
 
-    private void getImage() throws IOException {
-        while (true){
-            System.out.println("img get method");
-            File receivedFile = client.getImgFromServer();
-            if (receivedFile != null && receivedFile.exists()) {
-                BufferedImage bufferedImage = ImageIO.read(receivedFile);
-                Image image = SwingFXUtils.toFXImage(bufferedImage, null);
+    private void getImage(String ans) throws IOException {
+        System.out.println("img get method");
+        String[] filename=ans.split("@");
+        File receivedFile = new File(filename[1]);
+        if (receivedFile != null && receivedFile.exists()) {
+            Image image = new Image(receivedFile.toURI().toString());
 
-                Platform.runLater(() -> {
-                    HBox hb = new HBox();
-                    hb.setAlignment(Pos.CENTER_LEFT);
+            Platform.runLater(() -> {
+                HBox hb = new HBox();
+                hb.setAlignment(Pos.CENTER_LEFT);
+                ImageView img = new ImageView(image);
+                img.setFitHeight(200);
+                img.setFitWidth(200);
+                img.setPreserveRatio(true);
 
-                    ImageView img = new ImageView(image);
-                    img.setFitHeight(200);
-                    img.setFitWidth(200);
-                    img.setPreserveRatio(true);
-
-                    hb.getChildren().add(img);
-                    vBox.getChildren().add(hb);
-                });
-            }
+                hb.getChildren().add(img);
+                vBox.getChildren().add(hb);
+            });
+            previousMessage = ans;
         }
     }
 
     private void getMessage(String answer) {
         while (true){
             ans = client.msgGetFromServer(answer);
-            if(msgType.equals("msg")) {
-                if (!ans.equals("")) {
-                    if (!ans.equals(previousMessage)) {
+            if (!ans.equals("")) {
+                if (!ans.equals(previousMessage)) {
+                    if (!ans.startsWith("img@")){
                         Platform.runLater(() -> {
                             Label l1 = new Label("\n" + ans);
                             l1.setWrapText(true);
-                            l1.setMaxWidth(300);
+                            l1.setMaxWidth(600);
                             l1.setMinHeight(20);
                             l1.setFont(new Font("Arial", 20));
                             l1.setTextFill(Color.web("#00090d"));
@@ -100,13 +99,13 @@ public class ClientOneChatWindowFormController implements Initializable{
                         });
                         System.out.println("Contr  " + ans);
                         previousMessage = ans;
+                    }else if (ans.startsWith("img@")){
+                        try {
+                            getImage(ans);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
-            }else if (msgType.equals("img")) {
-                try {
-                    getImage();
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
         }
@@ -125,8 +124,7 @@ public class ClientOneChatWindowFormController implements Initializable{
             do{
                 String type = FilenameUtils.getExtension(selectedFile.getName());
                 System.out.println(type);
-                msgType = "img";
-                client.sendImgToServer(selectedFile, type);
+                client.msgSendToServer("img@"+selectedFile.getAbsolutePath());
                 System.out.println("Selected file: " + selectedFile.getAbsolutePath());
             }while (preCount<vBox.getChildren().size());
         }
@@ -160,7 +158,6 @@ public class ClientOneChatWindowFormController implements Initializable{
 
     public void sendTextMsg(String msg) {
         ans="";
-        msgType="msg";
         client.msgSendToServer(msg);
         msgTxt.clear();
         sndBtn.setDisable(true);

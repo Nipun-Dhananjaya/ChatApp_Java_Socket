@@ -1,10 +1,7 @@
 package com.playtech.util;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class Client {
@@ -12,9 +9,6 @@ public class Client {
     static Reader reader;
     static String message;
     static String reply;
-    static OutputStream outputStream;
-    static InputStream inputStream;
-    private static final int CHUNK_SIZE = 1024;
 
     public Client() throws IOException {
         System.out.println("initialize");
@@ -41,7 +35,6 @@ public class Client {
     }
 
     public static void msgSendToServer(String msg) {
-        Server.type = "msg";
         message = msg;
         System.out.println("Cli: " + message);
         try {
@@ -54,96 +47,5 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void sendImgToServer(File selectedFile, String type) throws IOException {
-        Server.type = "img";
-        outputStream = socket.getOutputStream();
-        BufferedImage image = ImageIO.read(selectedFile);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        if (image != null) {
-            ImageIO.write(image, type, byteArrayOutputStream);
-            byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
-            outputStream.write(size);
-            outputStream.write(byteArrayOutputStream.toByteArray());
-            outputStream.flush();
-            System.out.println("Image transferred successfully. ");
-        }
-    }
-
-    public File getImgFromServer() throws IOException {
-        System.out.println("get img method");/*
-        File outputFile = new File("image.jpg");
-        inputStream = socket.getInputStream();
-        byte[] sizeAr = new byte[4];
-        inputStream.read(sizeAr);
-        int size = ByteBuffer.wrap(sizeAr).asIntBuffer().get();
-        byte[] imageAr = new byte[size];
-        int bytesRead = 0;
-        while (bytesRead < size) {
-            int chunkSize = Math.min(CHUNK_SIZE, size - bytesRead);
-            bytesRead += inputStream.read(imageAr, bytesRead, chunkSize);
-        }
-        BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageAr));
-        if (image != null) {
-            System.out.println("Hay");
-            String[] writerFileSuffixes = ImageIO.getWriterFileSuffixes();
-            String desiredImageType = "";
-            for (String suffix : writerFileSuffixes) {
-                desiredImageType = suffix;
-            }
-            ImageIO.write(image, desiredImageType, outputFile);
-            System.out.println("Image saved successfully.");
-        }
-        return outputFile;*/
-        File outputFile = new File("image.jpg");
-        inputStream = socket.getInputStream();
-        byte[] sizeAr = new byte[4];
-        int totalBytesRead = 0;
-        while (totalBytesRead < 4) {
-            int bytesRead = inputStream.read(sizeAr, totalBytesRead, 4 - totalBytesRead);
-            if (bytesRead == -1) {
-                // Handle end of stream or other error condition
-                break;
-            }
-            totalBytesRead += bytesRead;
-        }
-
-        if (totalBytesRead == 4) {
-            int size = ByteBuffer.wrap(sizeAr).getInt();
-            if (size >= 0) {
-                byte[] imageAr = new byte[size];
-                int bytesRead = 0;
-                while (bytesRead < size) {
-                    int chunkSize = Math.min(CHUNK_SIZE, size - bytesRead);
-                    int currentBytesRead = inputStream.read(imageAr, bytesRead, chunkSize);
-                    if (currentBytesRead == -1) {
-                        // Handle end of stream or other error condition
-                        break;
-                    }
-                    bytesRead += currentBytesRead;
-                }
-
-                if (bytesRead == size) {
-                    BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageAr));
-                    if (image != null) {
-                        String[] writerFileSuffixes = ImageIO.getWriterFileSuffixes();
-                        String desiredImageType = "";
-                        for (String suffix : writerFileSuffixes) {
-                            desiredImageType = suffix;
-                        }
-                        ImageIO.write(image, desiredImageType, outputFile);
-                        System.out.println("Image saved successfully.");
-                    }
-                } else {
-                    // Handle incomplete data read or other error condition
-                }
-            } else {
-                // Handle invalid size value
-            }
-        } else {
-            // Handle incomplete data read or other error condition
-        }
-        return outputFile;
     }
 }
